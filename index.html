@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>웹 앱 모음</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f0f1a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+  h1 { font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .sub { color: #6a7f9e; font-size: 0.95rem; margin-bottom: 40px; }
+
+  .cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 700px;
+  }
+
+  .card {
+    background: #16213e;
+    border: 1.5px solid #0f3460;
+    border-radius: 16px;
+    padding: 32px 28px;
+    width: 260px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+  .card:hover {
+    border-color: #e94560;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(233,69,96,0.2);
+  }
+  .card .icon { font-size: 2.4rem; margin-bottom: 14px; }
+  .card h2 { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .card p { font-size: 0.83rem; color: #6a7f9e; line-height: 1.6; }
+
+  footer { margin-top: 48px; color: #3a4a5e; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+  <h1>웹 앱 모음</h1>
+  <p class="sub">설치 없이 브라우저에서 바로 사용하는 앱들</p>
+
+  <div class="cards">
+    <a class="card" href="pdf-editor.html">
+      <div class="icon">📄</div>
+      <h2>PDF 편집기</h2>
+      <p>여러 PDF를 불러와 페이지 삭제·회전·순서 변경 후 하나의 PDF로 저장</p>
+    </a>
+    <a class="card" href="todo.html">
+      <div class="icon">✅</div>
+      <h2>할 일 목록</h2>
+      <p>할 일을 추가하고 완료 체크, 삭제. 새로고침해도 내용이 유지됨</p>
+    </a>
+  </div>
+
+  <footer>모든 처리는 브라우저 내부에서만 이루어집니다.</footer>
+</body>
+</html>
