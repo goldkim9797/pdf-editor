@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>점심값 사다리타기</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+    margin-bottom: 6px;
+    color: #e0aaff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 24px #c77dff55;
+  }
+  .subtitle {
+    font-size: .9rem;
+    color: #888;
+    margin-bottom: 28px;
+  }
+
+  /* ── 입력 카드 ── */
+  #card-setup {
+    background: #16213e;
+    border: 1px solid #0f3460;
+    border-radius: 18px;
+    padding: 28px;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #c77dff;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* 결과 프리셋 뱃지 */
+  .prize-preset {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .prize-badge {
+    background: #0f3460;
+    border: 1.5px solid #533483;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: .88rem;
+    font-weight: 700;
+    color: #ffd166;
+  }
+
+  /* 참가자 태그 */
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 44px;
+    margin-bottom: 14px;
+  }
+  .tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #0f3460;
+    border: 1.5px solid #533483;
+    border-radius: 20px;
+    padding: 5px 13px;
+    font-size: .9rem;
+    animation: pop .15s ease;
+  }
+  @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .tag .del { cursor: pointer; color: #ff6b6b; font-size: 1rem; line-height: 1; }
+  .tag .del:hover { color: #ff3333; }
+
+  /* 입력 행 */
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  input[type="text"] {
+    flex: 1;
+    background: #0d1b2a;
+    border: 1px solid #0f3460;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #eee;
+    font-size: .95rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type="text"]:focus { border-color: #c77dff; }
+  input[type="text"]:disabled { opacity: .4; }
+
+  button {
+    background: #533483;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    color: #fff;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    white-space: nowrap;
+  }
+  button:hover { background: #7b2fbe; }
+  button:active { transform: scale(.96); }
+  button:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+
+  /* 카운터 */
+  .count-row {
+    font-size: .82rem;
+    color: #888;
+    margin-bottom: 16px;
+  }
+  .count-row b { color: #e0aaff; }
+
+  .divider { border: none; border-top: 1px solid #0f3460; margin: 18px 0; }
+
+  /* 완료 버튼 */
+  #btn-done {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #533483, #c77dff);
+    border-radius: 10px;
+    letter-spacing: .5px;
+  }
+  #btn-done:not(:disabled):hover { background: linear-gradient(135deg, #7b2fbe, #e0aaff); }
+
+  /* 수정 버튼 */
+  #btn-edit {
+    font-size: .82rem;
+    padding: 5px 14px;
+    background: #0f3460;
+    border: 1px solid #533483;
+    border-radius: 6px;
+    display: none;
+    margin-top: 6px;
+  }
+
+  /* ── 옵션 카드 ── */
+  #card-options {
+    background: #16213e;
+    border: 1px solid #0f3460;
+    border-radius: 18px;
+    padding: 24px 28px;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .rung-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .rung-row label { font-size: .88rem; color: #bbb; }
+  input[type="range"] { accent-color: #c77dff; width: 150px; }
+  #rung-val { color: #e0aaff; font-weight: 700; min-width: 28px; }
+
+  #btn-start {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ff6b6b, #ffa94d);
+    border-radius: 12px;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px #ff6b6b44;
+  }
+  #btn-start:hover { background: linear-gradient(135deg, #ff4444, #ff8800); }
+
+  /* ── 게임 영역 ── */
+  #game-area {
+    width: 100%;
+    max-width: 960px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  #canvas-wrap {
+    background: #16213e;
+    border: 1px solid #0f3460;
+    border-radius: 16px;
+    padding: 16px;
+    width: 100%;
+    overflow-x: auto;
+  }
+  canvas { display: block; margin: 0 auto; cursor: pointer; }
+
+  .tip {
+    font-size: .82rem;
+    color: #666;
+    text-align: center;
+  }
+
+  #controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  #btn-reveal-all {
+    background: linear-gradient(135deg, #7b2fbe, #c77dff);
+    font-weight: 700;
+    padding: 11px 28px;
+    border-radius: 10px;
+  }
+  #btn-reveal-all:hover { background: linear-gradient(135deg, #9d4edd, #e0aaff); }
+  #btn-reset {
+    background: #2a2a4a;
+    border: 1px solid #533483;
+    padding: 11px 28px;
+    border-radius: 10px;
+  }
+  #btn-reset:hover { background: #3a3a6a; }
+
+  /* ── 결과 목록 ── */
+  #result-list {
+    background: #16213e;
+    border: 1px solid #0f3460;
+    border-radius: 16px;
+    padding: 20px 28px;
+    width: 100%;
+    max-width: 480px;
+    display: none;
+  }
+  #result-list h2 { font-size: 1rem; color: #c77dff; margin-bottom: 14px; }
+  .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid #0f3460;
+    font-size: .95rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .3s, transform .3s;
+  }
+  .result-item.visible { opacity: 1; transform: none; }
+  .result-item:last-child { border-bottom: none; }
+  .result-name { font-weight: 700; }
+  .result-arrow { color: #555; }
+  .result-prize { font-weight: 700; font-size: 1rem; }
+</style>
+</head>
+<body>
+
+<h1>🍱 점심값 사다리타기</h1>
+<p class="subtitle">누가 얼마 낼지 공평하게 결정해요</p>
+
+<!-- 입력 카드 -->
+<div id="card-setup">
+  <div class="card-title">결과 항목 (고정)</div>
+  <div class="prize-preset">
+    <span class="prize-badge">💸 5,000원</span>
+    <span class="prize-badge">💸 10,000원</span>
+    <span class="prize-badge">💸 20,000원</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="card-title">참가자 입력</div>
+  <div class="tag-row" id="players-row"></div>
+  <div class="count-row">현재 <b id="player-count">0</b>명 입력됨</div>
+
+  <div class="input-row" id="input-row">
+    <input type="text" id="player-input" placeholder="이름 입력 후 Enter (무한 추가 가능)" maxlength="12" autofocus>
+    <button onclick="addPlayer()">추가</button>
+  </div>
+
+  <button id="btn-done" disabled onclick="donePlayers()">완료</button>
+  <button id="btn-edit" onclick="editPlayers()">참가자 수정</button>
+</div>
+
+<!-- 옵션 + 시작 카드 -->
+<div id="card-options">
+  <div class="rung-row">
+    <label>가로줄 밀도</label>
+    <input type="range" id="rung-slider" min="2" max="14" value="5"
+      oninput="document.getElementById('rung-val').textContent=this.value">
+    <span id="rung-val">5</span>
+  </div>
+  <button id="btn-start" onclick="startGame()">🎲 사다리타기 시작</button>
+</div>
+
+<!-- 게임 영역 -->
+<div id="game-area">
+  <div id="canvas-wrap">
+    <canvas id="canvas"></canvas>
+  </div>
+  <p class="tip">이름을 클릭하면 개별 공개 · 전체 결과 보기로 한꺼번에</p>
+  <div id="controls">
+    <button id="btn-reveal-all" onclick="revealAll()">전체 결과 보기</button>
+    <button id="btn-reset" onclick="resetGame()">처음부터 다시</button>
+  </div>
+</div>
+
+<!-- 결과 목록 -->
+<div id="result-list">
+  <h2>🏆 결과</h2>
+  <div id="result-items"></div>
+</div>
+
+<script>
+// ── 상수 ──
+const PRIZE_POOL = ['5,000원', '10,000원', '20,000원'];
+const PRIZE_COLORS = ['#06d6a0', '#4cc9f0', '#ff6b6b'];
+
+const PLAYER_COLORS = [
+  '#ff9ff3','#ffa94d','#ffd166','#74b9ff',
+  '#a29bfe','#fd79a8','#55efc4','#fdcb6e',
+  '#4cc9f0','#c77dff','#06d6a0','#ff6b6b',
+  '#f9844a','#43aa8b','#277da1','#90be6d',
+  '#577590','#f3722c','#f8961e','#ff9ff3',
+];
+
+// ── 상태 ──
+let players  = [];
+let prizes   = [];   // 참가자 수에 맞게 PRIZE_POOL 순환
+let ladder   = [];
+let paths    = [];
+let revealed = [];
+let animating = false;
+
+// ── 참가자 입력 ──
+function addPlayer() {
+  const inp = document.getElementById('player-input');
+  const name = inp.value.trim();
+  if (!name) return;
+  players.push(name);
+  inp.value = '';
+  inp.focus();
+  renderPlayers();
+}
+
+function removePlayer(i) {
+  players.splice(i, 1);
+  renderPlayers();
+}
+
+function renderPlayers() {
+  const row = document.getElementById('players-row');
+  row.innerHTML = '';
+  players.forEach((v, i) => {
+    const col = PLAYER_COLORS[i % PLAYER_COLORS.length];
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.style.borderColor = col + '99';
+    tag.innerHTML = `<span style="color:${col}">${esc(v)}</span>
+                     <span class="del" onclick="removePlayer(${i})">✕</span>`;
+    row.appendChild(tag);
+  });
+  document.getElementById('player-count').textContent = players.length;
+  document.getElementById('btn-done').disabled = players.length < 2;
+}
+
+function donePlayers() {
+  // 입력 잠금
+  document.getElementById('input-row').style.display = 'none';
+  document.getElementById('btn-done').style.display = 'none';
+  document.getElementById('btn-edit').style.display = 'block';
+  document.querySelectorAll('#players-row .del').forEach(el => el.style.display = 'none');
+
+  // 결과 자동 배정 (PRIZE_POOL 순환)
+  prizes = players.map((_, i) => PRIZE_POOL[i % PRIZE_POOL.length]);
+
+  // 옵션 카드 표시
+  document.getElementById('card-options').style.display = 'block';
+  document.getElementById('btn-start').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function editPlayers() {
+  document.getElementById('input-row').style.display = 'flex';
+  document.getElementById('btn-done').style.display = '';
+  document.getElementById('btn-edit').style.display = 'none';
+  document.querySelectorAll('#players-row .del').forEach(el => el.style.display = '');
+  document.getElementById('card-options').style.display = 'none';
+  document.getElementById('player-input').focus();
+}
+
+document.getElementById('player-input')
+  .addEventListener('keydown', e => { if (e.key === 'Enter') addPlayer(); });
+
+// ── 사다리 생성 ──
+function buildLadder(cols, rows, density) {
+  const L = Array.from({length: cols - 1}, () => Array(rows).fill(false));
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols - 1; c++) {
+      if (!L[c][r] && !(c > 0 && L[c-1][r])) {
+        if (Math.random() < density) L[c][r] = true;
+      }
+    }
+  }
+  return L;
+}
+
+function tracePath(startCol, cols, rows, L) {
+  const path = [];
+  let c = startCol;
+  path.push({c, r: -1});
+  for (let r = 0; r < rows; r++) {
+    path.push({c, r});
+    if      (c < cols-1 && L[c][r])   { c++; path.push({c, r}); }
+    else if (c > 0      && L[c-1][r]) { c--; path.push({c, r}); }
+  }
+  path.push({c, r: rows});
+  return {path, dest: c};
+}
+
+// ── 캔버스 ──
+const PAD_X = 60, PAD_Y = 76;
+let cellW, cellH, canvasW, canvasH, ROWS, COLS;
+let ctx, cvs;
+
+function colX(c) { return PAD_X + c * cellW; }
+function rowY(r) { return PAD_Y + r * cellH; }
+function py(r)   { return r < 0 ? PAD_Y - 1 : r >= ROWS ? rowY(ROWS) + 1 : rowY(r); }
+
+function initCanvas() {
+  cvs = document.getElementById('canvas');
+  ctx = cvs.getContext('2d');
+  COLS = players.length;
+  ROWS = parseInt(document.getElementById('rung-slider').value) * 2 + 2;
+
+  canvasW = Math.max(560, COLS * 82 + PAD_X * 2);
+  cellW   = (canvasW - PAD_X * 2) / (COLS - 1);
+  cellH   = 38;
+  canvasH = PAD_Y + ROWS * cellH + PAD_Y;
+
+  cvs.width  = canvasW;
+  cvs.height = canvasH;
+}
+
+function drawBase(rev) {
+  ctx.clearRect(0, 0, canvasW, canvasH);
+
+  // 세로줄
+  for (let c = 0; c < COLS; c++) {
+    ctx.strokeStyle = '#2a2a50';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(colX(c), rowY(0));
+    ctx.lineTo(colX(c), rowY(ROWS));
+    ctx.stroke();
+  }
+
+  // 가로줄
+  for (let c = 0; c < COLS - 1; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      if (ladder[c][r]) {
+        ctx.strokeStyle = '#2a2a50';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(colX(c),     rowY(r));
+        ctx.lineTo(colX(c + 1), rowY(r));
+        ctx.stroke();
+      }
+    }
+  }
+
+  // 상단 참가자 레이블
+  players.forEach((name, i) => {
+    const x = colX(i), y = PAD_Y - 18;
+    const col = PLAYER_COLORS[i % PLAYER_COLORS.length];
+    const w = 70, h = 30;
+    ctx.fillStyle = col + '22';
+    rr(x - w/2, y - h + 8, w, h, 8); ctx.fill();
+    ctx.strokeStyle = rev[i] ? col : col + '88';
+    ctx.lineWidth = rev[i] ? 2 : 1.5;
+    rr(x - w/2, y - h + 8, w, h, 8); ctx.stroke();
+    ctx.fillStyle = rev[i] ? col : col + 'cc';
+    ctx.font = 'bold 12px Segoe UI, Malgun Gothic, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(clip(name, 7), x, y);
+  });
+
+  // 하단 결과 레이블
+  prizes.forEach((p, i) => {
+    const x = colX(i), y = rowY(ROWS) + 26;
+    let playerIdx = -1;
+    paths.forEach((pt, pi) => { if (pt.dest === i && rev[pi]) playerIdx = pi; });
+
+    const w = 80, h = 30;
+    const prizeIdx = PRIZE_POOL.indexOf(p);
+    const baseCol  = prizeIdx >= 0 ? PRIZE_COLORS[prizeIdx] : '#ffd166';
+
+    if (playerIdx >= 0) {
+      ctx.fillStyle = baseCol + '30';
+      rr(x - w/2, y - h + 8, w, h, 8); ctx.fill();
+      ctx.strokeStyle = baseCol;
+      ctx.lineWidth = 2;
+      rr(x - w/2, y - h + 8, w, h, 8); ctx.stroke();
+      ctx.fillStyle = baseCol;
+    } else {
+      ctx.fillStyle = '#1e1e3a';
+      rr(x - w/2, y - h + 8, w, h, 8); ctx.fill();
+      ctx.strokeStyle = '#333355';
+      ctx.lineWidth = 1.5;
+      rr(x - w/2, y - h + 8, w, h, 8); ctx.stroke();
+      ctx.fillStyle = '#666';
+    }
+    ctx.font = 'bold 12px Segoe UI, Malgun Gothic, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(p, x, y);
+  });
+}
+
+function drawPath(playerIdx, progress) {
+  const {path} = paths[playerIdx];
+  const col   = PLAYER_COLORS[playerIdx % PLAYER_COLORS.length];
+  const total = path.length - 1;
+  const drawn = Math.floor(progress * total);
+  const frac  = (progress * total) - drawn;
+
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 4;
+  ctx.shadowColor = col;
+  ctx.shadowBlur = 14;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+
+  for (let s = 0; s <= drawn && s < total; s++) {
+    const a = path[s], b = path[s + 1];
+    const ax = colX(a.c), ay = py(a.r);
+    const bx = colX(b.c), by = py(b.r);
+    if (s === 0) ctx.moveTo(ax, ay);
+    if (s < drawn) ctx.lineTo(bx, by);
+    else ctx.lineTo(ax + (bx - ax) * frac, ay + (by - ay) * frac);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function rr(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w, y,   x+w, y+r,   r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x,   y+h, x,   y+h-r, r);
+  ctx.lineTo(x, y+r);   ctx.arcTo(x,   y,   x+r, y,     r);
+  ctx.closePath();
+}
+
+function clip(s, n) { return s.length > n ? s.slice(0, n) + '…' : s; }
+function esc(s) {
+  return s.replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── 게임 시작 ──
+function startGame() {
+  initCanvas();
+  ladder   = buildLadder(COLS, ROWS, 0.38);
+  paths    = players.map((_, i) => tracePath(i, COLS, ROWS, ladder));
+  revealed = Array(COLS).fill(false);
+
+  document.getElementById('card-setup').style.display   = 'none';
+  document.getElementById('card-options').style.display = 'none';
+  document.getElementById('result-list').style.display  = 'none';
+  document.getElementById('result-items').innerHTML = '';
+  document.getElementById('game-area').style.display = 'flex';
+
+  drawBase(revealed);
+  cvs.onclick = handleClick;
+}
+
+function handleClick(e) {
+  if (animating) return;
+  const rect = cvs.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (cvs.width  / rect.width);
+  const my = (e.clientY - rect.top)  * (cvs.height / rect.height);
+
+  players.forEach((_, i) => {
+    const x = colX(i), y = PAD_Y - 18;
+    if (mx >= x - 38 && mx <= x + 38 && my >= y - 24 && my <= y + 14) {
+      if (!revealed[i]) revealPlayer(i);
+    }
+  });
+}
+
+function revealPlayer(i) {
+  if (revealed[i] || animating) return;
+  animating = true;
+  const dur = 750 + paths[i].path.length * 15;
+  const t0  = performance.now();
+
+  (function frame(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    drawBase(revealed);
+    revealed.forEach((r, idx) => { if (r) drawPath(idx, 1); });
+    drawPath(i, p);
+    if (p < 1) requestAnimationFrame(frame);
+    else {
+      revealed[i] = true;
+      animating   = false;
+      drawBase(revealed);
+      revealed.forEach((r, idx) => { if (r) drawPath(idx, 1); });
+      addResultItem(i);
+    }
+  })(t0);
+}
+
+function revealAll() {
+  if (animating) return;
+  const queue = players.map((_, i) => i).filter(i => !revealed[i]);
+  if (!queue.length) return;
+
+  function next(qi) {
+    if (qi >= queue.length) return;
+    const i = queue[qi];
+    animating = true;
+    const dur = 500, t0 = performance.now();
+    (function frame(now) {
+      const p = Math.min((now - t0) / dur, 1);
+      drawBase(revealed);
+      revealed.forEach((r, ri) => { if (r) drawPath(ri, 1); });
+      drawPath(i, p);
+      if (p < 1) requestAnimationFrame(frame);
+      else {
+        revealed[i] = true;
+        animating   = false;
+        drawBase(revealed);
+        revealed.forEach((r, ri) => { if (r) drawPath(ri, 1); });
+        addResultItem(i);
+        setTimeout(() => next(qi + 1), 100);
+      }
+    })(t0);
+  }
+  next(0);
+}
+
+// ── 결과 목록 ──
+function addResultItem(playerIdx) {
+  document.getElementById('result-list').style.display = 'block';
+  const dest      = paths[playerIdx].dest;
+  const prize     = prizes[dest];
+  const playerCol = PLAYER_COLORS[playerIdx % PLAYER_COLORS.length];
+  const prizeIdx  = PRIZE_POOL.indexOf(prize);
+  const prizeCol  = prizeIdx >= 0 ? PRIZE_COLORS[prizeIdx] : '#ffd166';
+
+  const item = document.createElement('div');
+  item.className = 'result-item';
+  item.innerHTML = `
+    <span class="result-name" style="color:${playerCol}">${esc(players[playerIdx])}</span>
+    <span class="result-arrow">→</span>
+    <span class="result-prize" style="color:${prizeCol}">${prize}</span>
+  `;
+  document.getElementById('result-items').appendChild(item);
+  requestAnimationFrame(() => requestAnimationFrame(() => item.classList.add('visible')));
+}
+
+// ── 초기화 ──
+function resetGame() {
+  players = []; prizes = []; ladder = []; paths = []; revealed = [];
+  animating = false;
+
+  renderPlayers();
+  document.getElementById('input-row').style.display    = 'flex';
+  document.getElementById('btn-done').style.display     = '';
+  document.getElementById('btn-done').disabled          = true;
+  document.getElementById('btn-edit').style.display     = 'none';
+  document.getElementById('card-setup').style.display   = '';
+  document.getElementById('card-options').style.display = 'none';
+  document.getElementById('game-area').style.display    = 'none';
+  document.getElementById('result-list').style.display  = 'none';
+  document.getElementById('player-input').value = '';
+  document.getElementById('player-input').focus();
+}
+</script>
+</body>
+</html>
